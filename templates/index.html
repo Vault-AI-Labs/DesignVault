@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DesignVault</title>
+<style>
+:root {
+  --bg: #0a0a0b;
+  --surface: #141416;
+  --surface2: #1c1c20;
+  --surface3: #242428;
+  --border: #2a2a30;
+  --text: #e4e4e7;
+  --text2: #a1a1aa;
+  --text3: #71717a;
+  --accent: #6d5acd;
+  --accent2: #8b7ae0;
+  --accent-bg: rgba(109,90,205,0.12);
+  --success: #34d399;
+  --error: #f87171;
+  --starred: #fbbf24;
+  --card-radius: 12px;
+  --sidebar-width: 240px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Header */
+.header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.header h1 {
+  font-size: 18px; font-weight: 700; white-space: nowrap;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.capture-bar {
+  flex: 1; display: flex; gap: 8px; max-width: 600px;
+}
+
+.capture-bar input {
+  flex: 1; padding: 8px 14px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 14px;
+  outline: none; transition: border-color 0.2s;
+}
+.capture-bar input:focus { border-color: var(--accent); }
+.capture-bar input::placeholder { color: var(--text3); }
+
+.btn {
+  padding: 8px 16px; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--surface3); color: var(--text); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+.header-actions { display: flex; gap: 8px; margin-left: auto; }
+
+.capture-progress {
+  display: none; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text2);
+}
+.capture-progress.active { display: flex; }
+.capture-progress .spinner {
+  width: 16px; height: 16px; border: 2px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Layout */
+.layout {
+  display: flex;
+  margin-top: 57px;
+  min-height: calc(100vh - 57px);
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width); flex-shrink: 0;
+  padding: 16px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  position: fixed; top: 57px; bottom: 0; left: 0;
+}
+
+.sidebar-section { margin-bottom: 20px; }
+.sidebar-section h3 {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  color: var(--text3); letter-spacing: 0.5px;
+  margin-bottom: 8px; padding: 0 8px;
+}
+
+.sidebar-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 6px;
+  font-size: 13px; color: var(--text2);
+  cursor: pointer; transition: all 0.15s;
+  border: none; background: none; width: 100%; text-align: left;
+}
+.sidebar-item:hover { background: var(--surface2); color: var(--text); }
+.sidebar-item.active { background: var(--accent-bg); color: var(--accent2); }
+.sidebar-item .count {
+  margin-left: auto; font-size: 11px; color: var(--text3);
+}
+
+.sidebar-item .dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+
+.collection-add {
+  display: flex; gap: 6px; margin-top: 6px;
+}
+.collection-add input {
+  flex: 1; padding: 5px 8px; font-size: 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); outline: none;
+}
+
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 4px; }
+.tag-pill {
+  padding: 3px 8px; font-size: 11px; border-radius: 10px;
+  background: var(--surface2); color: var(--text2); cursor: pointer;
+  border: 1px solid transparent; transition: all 0.15s;
+}
+.tag-pill:hover, .tag-pill.active {
+  border-color: var(--accent); color: var(--accent2);
+}
+
+/* Main content */
+.main {
+  flex: 1; margin-left: var(--sidebar-width);
+  padding: 20px;
+}
+
+/* Drop zone */
+.dropzone {
+  border: 2px dashed var(--border); border-radius: 12px;
+  padding: 32px; text-align: center; margin-bottom: 20px;
+  color: var(--text3); font-size: 14px;
+  transition: all 0.2s; cursor: pointer;
+  position: relative;
+}
+.dropzone.drag-over {
+  border-color: var(--accent); background: var(--accent-bg);
+  color: var(--accent2);
+}
+.dropzone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+
+/* Gallery */
+.gallery {
+  columns: 3;
+  column-gap: 16px;
+}
+@media (max-width: 1100px) { .gallery { columns: 2; } }
+@media (max-width: 700px) { .gallery { columns: 1; } }
+
+.card {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+.card img {
+  width: 100%; display: block;
+}
+
+.card-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
+  opacity: 0; transition: opacity 0.2s;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 12px;
+}
+.card:hover .card-overlay { opacity: 1; }
+
+.card-title {
+  font-size: 13px; font-weight: 600; color: white;
+  margin-bottom: 4px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.card-domain { font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+.card-colors { display: flex; gap: 3px; }
+.card-color-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.card-star {
+  position: absolute; top: 8px; right: 8px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(0,0,0,0.5); border: none;
+  color: var(--text3); font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: all 0.2s;
+}
+.card:hover .card-star { opacity: 1; }
+.card-star.starred { color: var(--starred); opacity: 1; }
+
+.card-select {
+  position: absolute; top: 8px; left: 8px;
+  width: 22px; height: 22px; border-radius: 4px;
+  background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.3);
+  cursor: pointer; display: none; align-items: center; justify-content: center;
+  color: white; font-size: 12px;
+}
+.selecting .card-select { display: flex; }
+.card-select.selected { background: var(--accent); border-color: var(--accent); }
+
+/* Empty state */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--text3);
+}
+.empty-state h2 { font-size: 20px; margin-bottom: 8px; color: var(--text2); }
+.empty-state p { font-size: 14px; }
+
+/* Lightbox */
+.lightbox {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.85);
+  display: none; backdrop-filter: blur(8px);
+}
+.lightbox.active { display: flex; }
+
+.lightbox-content {
+  display: flex; width: 100%; height: 100%;
+  max-width: 1200px; margin: 0 auto;
+}
+
+.lightbox-image {
+  flex: 1; overflow-y: auto; padding: 24px;
+  display: flex; align-items: flex-start; justify-content: center;
+}
+.lightbox-image img {
+  max-width: 100%; border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.lightbox-details {
+  width: 360px; flex-shrink: 0;
+  padding: 24px; overflow-y: auto;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+}
+
+.lightbox-close {
+  position: fixed; top: 16px; right: 380px; z-index: 201;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.detail-section { margin-bottom: 20px; }
+.detail-section label {
+  display: block; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; color: var(--text3);
+  letter-spacing: 0.5px; margin-bottom: 6px;
+}
+
+.detail-title {
+  font-size: 18px; font-weight: 700; margin-bottom: 4px;
+  background: none; border: none; color: var(--text);
+  width: 100%; outline: none; font-family: inherit;
+}
+.detail-title:focus { border-bottom: 1px solid var(--accent); }
+
+.detail-url {
+  font-size: 12px; color: var(--accent2);
+  text-decoration: none; word-break: break-all;
+}
+.detail-url:hover { text-decoration: underline; }
+
+.detail-description {
+  font-size: 13px; color: var(--text2); line-height: 1.5;
+}
+
+.color-swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.color-swatch {
+  width: 36px; height: 36px; border-radius: 8px;
+  border: 1px solid var(--border); cursor: pointer;
+  position: relative; transition: transform 0.15s;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch .hex {
+  position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+  font-size: 9px; color: var(--text3); white-space: nowrap;
+  display: none;
+}
+.color-swatch:hover .hex { display: block; }
+
+.detail-notes {
+  width: 100%; min-height: 80px; padding: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 13px;
+  font-family: inherit; resize: vertical; outline: none;
+}
+.detail-notes:focus { border-color: var(--accent); }
+
+.detail-tags-input {
+  width: 100%; padding: 8px 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 13px;
+  font-family: inherit; outline: none;
+}
+.detail-tags-input:focus { border-color: var(--accent); }
+
+.collection-checkboxes { display: flex; flex-direction: column; gap: 6px; }
+.collection-check {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text2); cursor: pointer;
+}
+.collection-check input { accent-color: var(--accent); }
+
+.detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.status-btns { display: flex; gap: 6px; }
+.status-btn {
+  padding: 5px 12px; border-radius: 6px; font-size: 12px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text2); cursor: pointer; transition: all 0.15s;
+}
+.status-btn:hover { border-color: var(--accent); }
+.status-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* Selection action bar */
+.selection-bar {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: none; align-items: center; gap: 12px;
+  padding: 12px 20px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  z-index: 150;
+}
+.selection-bar.active { display: flex; }
+.selection-count { font-size: 13px; color: var(--text2); margin-right: 4px; }
+
+/* Toast */
+.toast {
+  position: fixed; top: 72px; right: 24px; z-index: 300;
+  padding: 10px 16px; border-radius: 8px;
+  font-size: 13px; transform: translateY(-10px); opacity: 0;
+  transition: all 0.3s;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: var(--success); color: #000; }
+.toast.error { background: var(--error); color: #000; }
+
+/* Checkbox for animate */
+.animate-toggle {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text3);
+}
+.animate-toggle input { accent-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <h1>DesignVault</h1>
+  <div class="capture-bar">
+    <input type="text" id="urlInput" placeholder="Paste a URL to capture..." autocomplete="off">
+    <label class="animate-toggle">
+      <input type="checkbox" id="animateCheck"> GIF
+    </label>
+    <button class="btn btn-primary" id="captureBtn">Capture</button>
+  </div>
+  <div class="capture-progress" id="captureProgress">
+    <div class="spinner"></div>
+    <span id="captureStatus">Screenshotting...</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-secondary btn-sm" id="selectToggle">Select</button>
+  </div>
+</header>
+
+<!-- Layout -->
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <h3>View</h3>
+      <button class="sidebar-item active" data-filter="all">
+        <span>All Items</span>
+        <span class="count" id="countAll">0</span>
+      </button>
+      <button class="sidebar-item" data-filter="starred">
+        <span>Starred</span>
+        <span class="count" id="countStarred">0</span>
+      </button>
+      <button class="sidebar-item" data-filter="archived">
+        <span>Archived</span>
+        <span class="count" id="countArchived">0</span>
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Collections</h3>
+      <div id="collectionsList"></div>
+      <div class="collection-add">
+        <input type="text" id="newCollectionInput" placeholder="New collection...">
+        <button class="btn btn-sm btn-primary" id="addCollectionBtn">+</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Tags</h3>
+      <div class="tag-cloud" id="tagCloud"></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="dropzone" id="dropzone">
+      <p>Drop images here to add to your collection</p>
+      <input type="file" id="fileInput" multiple accept="image/*">
+    </div>
+    <div class="gallery" id="gallery"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <h2>No inspiration yet</h2>
+      <p>Paste a URL above or drop images to start your collection</p>
+    </div>
+  </main>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">&times;</button>
+  <div class="lightbox-content">
+    <div class="lightbox-image">
+      <img id="lightboxImg" src="" alt="">
+    </div>
+    <div class="lightbox-details" id="lightboxDetails">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Selection bar -->
+<div class="selection-bar" id="selectionBar">
+  <span class="selection-count"><span id="selectionCount">0</span> selected</span>
+  <button class="btn btn-primary btn-sm" id="exportClaudeBtn">Copy for Claude</button>
+  <button class="btn btn-secondary btn-sm" id="archiveSelectedBtn">Archive</button>
+  <button class="btn btn-secondary btn-sm" id="deleteSelectedBtn">Delete</button>
+  <button class="btn btn-secondary btn-sm" id="cancelSelectBtn">Cancel</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+let allItems = [];
+let allCollections = [];
+let currentFilter = { type: 'all', value: null };
+let selectedIds = new Set();
+let selecting = false;
+let currentLightboxId = null;
+
+// ---------------------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+  loadItems();
+  loadCollections();
+  setupCapture();
+  setupDropzone();
+  setupLightbox();
+  setupSelection();
+  setupSidebar();
+  setupCollectionAdd();
+});
+
+// ---------------------------------------------------------------------------
+// API helpers
+// ---------------------------------------------------------------------------
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
+    ...opts,
+  });
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Load data
+// ---------------------------------------------------------------------------
+async function loadItems() {
+  const params = new URLSearchParams();
+  if (currentFilter.type === 'starred') params.set('status', 'starred');
+  else if (currentFilter.type === 'archived') params.set('status', 'archived');
+  else if (currentFilter.type === 'collection') params.set('collection', currentFilter.value);
+  else if (currentFilter.type === 'tag') params.set('tag', currentFilter.value);
+
+  allItems = await api('/api/items?' + params.toString());
+  renderGallery();
+  updateCounts();
+  updateTagCloud();
+}
+
+async function loadCollections() {
+  allCollections = await api('/api/collections');
+  renderCollections();
+}
+
+// ---------------------------------------------------------------------------
+// Render gallery
+// ---------------------------------------------------------------------------
+function renderGallery() {
+  const gallery = document.getElementById('gallery');
+  const empty = document.getElementById('emptyState');
+
+  if (allItems.length === 0) {
+    gallery.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  gallery.innerHTML = allItems.map(item => {
+    const domain = item.source_url ? new URL(item.source_url).hostname.replace('www.', '') : 'Local';
+    const isStarred = item.status === 'starred';
+    const isSelected = selectedIds.has(item.item_id);
+    return `
+      <div class="card" data-id="${item.item_id}">
+        <img src="/api/files/${item.item_id}/thumbnail.jpg" alt="${item.title}" loading="lazy">
+        <button class="card-star ${isStarred ? 'starred' : ''}" data-id="${item.item_id}"
+                onclick="event.stopPropagation(); toggleStar('${item.item_id}')">
+          ${isStarred ? '&#9733;' : '&#9734;'}
+        </button>
+        <div class="card-select ${isSelected ? 'selected' : ''}" data-id="${item.item_id}"
+             onclick="event.stopPropagation(); toggleSelect('${item.item_id}')">
+          ${isSelected ? '&#10003;' : ''}
+        </div>
+        <div class="card-overlay" onclick="openLightbox('${item.item_id}')">
+          <div class="card-title">${esc(item.title)}</div>
+          <div class="card-domain">${esc(domain)}</div>
+          <div class="card-colors">
+            ${(item.colors || []).slice(0, 5).map(c =>
+              `<div class="card-color-dot" style="background:${c}"></div>`
+            ).join('')}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ---------------------------------------------------------------------------
+// Sidebar
+// ---------------------------------------------------------------------------
+function setupSidebar() {
+  document.querySelectorAll('.sidebar-item[data-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = { type: btn.dataset.filter, value: null };
+      loadItems();
+    });
+  });
+}
+
+function renderCollections() {
+  const list = document.getElementById('collectionsList');
+  list.innerHTML = allCollections.map(col => `
+    <button class="sidebar-item ${currentFilter.type === 'collection' && currentFilter.value === col.id ? 'active' : ''}"
+            data-collection="${col.id}">
+      <span class="dot" style="background:${col.color}"></span>
+      <span>${esc(col.name)}</span>
+    </button>
+  `).join('');
+
+  list.querySelectorAll('.sidebar-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = { type: 'collection', value: btn.dataset.collection };
+      loadItems();
+    });
+  });
+}
+
+function setupCollectionAdd() {
+  const input = document.getElementById('newCollectionInput');
+  const btn = document.getElementById('addCollectionBtn');
+  const colors = ['#6d5acd', '#34d399', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316'];
+
+  async function addCollection() {
+    const name = input.value.trim();
+    if (!name) return;
+    const color = colors[allCollections.length % colors.length];
+    await api('/api/collections', {
+      method: 'POST',
+      body: JSON.stringify({ name, color }),
+    });
+    input.value = '';
+    loadCollections();
+  }
+
+  btn.addEventListener('click', addCollection);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') addCollection(); });
+}
+
+// ---------------------------------------------------------------------------
+// Tag cloud
+// ---------------------------------------------------------------------------
+function updateTagCloud() {
+  const counts = {};
+  allItems.forEach(item => {
+    (item.tags || []).forEach(tag => { counts[tag] = (counts[tag] || 0) + 1; });
+  });
+  const cloud = document.getElementById('tagCloud');
+  cloud.innerHTML = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 20)
+    .map(([tag]) => `
+      <span class="tag-pill ${currentFilter.type === 'tag' && currentFilter.value === tag ? 'active' : ''}"
+            data-tag="${tag}">${tag}</span>
+    `).join('');
+
+  cloud.querySelectorAll('.tag-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      currentFilter = { type: 'tag', value: pill.dataset.tag };
+      loadItems();
+    });
+  });
+}
+
+function updateCounts() {
+  // Quick count from a fresh fetch
+  api('/api/items').then(all => {
+    document.getElementById('countAll').textContent = all.length;
+  });
+  api('/api/items?status=starred').then(s => {
+    document.getElementById('countStarred').textContent = s.length;
+  });
+  api('/api/items?status=archived').then(a => {
+    document.getElementById('countArchived').textContent = a.length;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// URL Capture
+// ---------------------------------------------------------------------------
+function setupCapture() {
+  const input = document.getElementById('urlInput');
+  const btn = document.getElementById('captureBtn');
+  const progress = document.getElementById('captureProgress');
+  const statusEl = document.getElementById('captureStatus');
+
+  async function startCapture() {
+    const url = input.value.trim();
+    if (!url) return;
+    const animate = document.getElementById('animateCheck').checked;
+
+    btn.disabled = true;
+    progress.classList.add('active');
+    btn.style.display = 'none';
+
+    try {
+      const { job_id } = await api('/api/capture', {
+        method: 'POST',
+        body: JSON.stringify({ url, animate }),
+      });
+
+      const es = new EventSource(`/api/stream/${job_id}`);
+      es.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        if (data.status === 'complete') {
+          es.close();
+          input.value = '';
+          btn.disabled = false;
+          btn.style.display = '';
+          progress.classList.remove('active');
+          loadItems();
+          toast('Captured!', 'success');
+        } else if (data.status === 'error') {
+          es.close();
+          btn.disabled = false;
+          btn.style.display = '';
+          progress.classList.remove('active');
+          toast(data.message || 'Capture failed', 'error');
+        } else if (data.status !== 'heartbeat') {
+          statusEl.textContent = data.message || data.status;
+        }
+      };
+      es.onerror = () => {
+        es.close();
+        btn.disabled = false;
+        btn.style.display = '';
+        progress.classList.remove('active');
+        toast('Connection lost', 'error');
+      };
+    } catch (err) {
+      btn.disabled = false;
+      btn.style.display = '';
+      progress.classList.remove('active');
+      toast('Capture failed', 'error');
+    }
+  }
+
+  btn.addEventListener('click', startCapture);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') startCapture(); });
+}
+
+// ---------------------------------------------------------------------------
+// Drag & Drop Upload
+// ---------------------------------------------------------------------------
+function setupDropzone() {
+  const dz = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+
+  ['dragenter', 'dragover'].forEach(e => {
+    dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add('drag-over'); });
+  });
+  ['dragleave', 'drop'].forEach(e => {
+    dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove('drag-over'); });
+  });
+
+  dz.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length) uploadFiles(files);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) uploadFiles(fileInput.files);
+    fileInput.value = '';
+  });
+
+  // Also allow dropping on the whole main area
+  const main = document.querySelector('.main');
+  main.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('drag-over'); });
+  main.addEventListener('dragleave', (e) => {
+    if (!main.contains(e.relatedTarget)) dz.classList.remove('drag-over');
+  });
+  main.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length) uploadFiles(files);
+  });
+}
+
+async function uploadFiles(files) {
+  const fd = new FormData();
+  for (const f of files) {
+    if (f.type.startsWith('image/')) fd.append('file', f);
+  }
+  if (!fd.has('file')) return;
+  const res = await fetch('/api/upload', { method: 'POST', body: fd });
+  const data = await res.json();
+  if (data.items && data.items.length) {
+    toast(`Added ${data.items.length} image${data.items.length > 1 ? 's' : ''}`, 'success');
+    loadItems();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Lightbox
+// ---------------------------------------------------------------------------
+function setupLightbox() {
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('lightbox').addEventListener('click', (e) => {
+    if (e.target.id === 'lightbox') closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+}
+
+function openLightbox(itemId) {
+  if (selecting) { toggleSelect(itemId); return; }
+  currentLightboxId = itemId;
+  const item = allItems.find(i => i.item_id === itemId);
+  if (!item) return;
+
+  document.getElementById('lightboxImg').src = `/api/files/${itemId}/screenshot.png`;
+
+  const details = document.getElementById('lightboxDetails');
+  details.innerHTML = `
+    <div class="detail-section">
+      <input class="detail-title" id="detailTitle" value="${esc(item.title)}" placeholder="Title...">
+      ${item.source_url ? `<a class="detail-url" href="${esc(item.source_url)}" target="_blank">${esc(item.source_url)}</a>` : ''}
+    </div>
+
+    ${item.page_description ? `
+    <div class="detail-section">
+      <label>Description</label>
+      <div class="detail-description">${esc(item.page_description)}</div>
+    </div>` : ''}
+
+    <div class="detail-section">
+      <label>Colors</label>
+      <div class="color-swatches">
+        ${(item.colors || []).map(c => `
+          <div class="color-swatch" style="background:${c}" onclick="copyColor('${c}')" title="${c}">
+            <span class="hex">${c}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <label>Collections</label>
+      <div class="collection-checkboxes">
+        ${allCollections.map(col => `
+          <label class="collection-check">
+            <input type="checkbox" value="${col.id}"
+              ${(item.collection_ids || []).includes(col.id) ? 'checked' : ''}
+              onchange="updateItemCollections('${itemId}')">
+            <span class="dot" style="background:${col.color}"></span>
+            ${esc(col.name)}
+          </label>
+        `).join('')}
+        ${allCollections.length === 0 ? '<span style="font-size:12px;color:var(--text3)">Create a collection in the sidebar first</span>' : ''}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <label>Tags <span style="font-weight:400;color:var(--text3)">(comma separated)</span></label>
+      <input class="detail-tags-input" id="detailTags" value="${(item.tags || []).join(', ')}" placeholder="dark, minimal, saas...">
+    </div>
+
+    <div class="detail-section">
+      <label>Notes</label>
+      <textarea class="detail-notes" id="detailNotes" placeholder="What caught your eye?">${esc(item.notes || '')}</textarea>
+    </div>
+
+    <div class="detail-section">
+      <label>Status</label>
+      <div class="status-btns">
+        <button class="status-btn ${item.status === 'new' ? 'active' : ''}" onclick="setItemStatus('${itemId}','new')">New</button>
+        <button class="status-btn ${item.status === 'starred' ? 'active' : ''}" onclick="setItemStatus('${itemId}','starred')">Starred</button>
+        <button class="status-btn ${item.status === 'archived' ? 'active' : ''}" onclick="setItemStatus('${itemId}','archived')">Archived</button>
+      </div>
+    </div>
+
+    <div class="detail-section detail-actions">
+      <button class="btn btn-primary btn-sm" onclick="copyForClaude(['${itemId}'])">Copy for Claude</button>
+      ${item.has_animation ? `<button class="btn btn-secondary btn-sm" onclick="viewAnimation('${itemId}')">View Animation</button>` : ''}
+      <button class="btn btn-secondary btn-sm" style="color:var(--error)" onclick="deleteItem('${itemId}')">Delete</button>
+    </div>
+  `;
+
+  // Auto-save on blur
+  const titleEl = details.querySelector('#detailTitle');
+  titleEl.addEventListener('blur', () => saveItemField(itemId, 'title', titleEl.value));
+
+  const tagsEl = details.querySelector('#detailTags');
+  tagsEl.addEventListener('blur', () => {
+    const tags = tagsEl.value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+    saveItemField(itemId, 'tags', tags);
+  });
+
+  const notesEl = details.querySelector('#detailNotes');
+  notesEl.addEventListener('blur', () => saveItemField(itemId, 'notes', notesEl.value));
+
+  document.getElementById('lightbox').classList.add('active');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  currentLightboxId = null;
+}
+
+// ---------------------------------------------------------------------------
+// Item actions
+// ---------------------------------------------------------------------------
+async function saveItemField(itemId, field, value) {
+  await api(`/api/items/${itemId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ [field]: value }),
+  });
+  loadItems();
+}
+
+async function updateItemCollections(itemId) {
+  const checks = document.querySelectorAll('.collection-checkboxes input[type="checkbox"]');
+  const ids = Array.from(checks).filter(c => c.checked).map(c => c.value);
+  await saveItemField(itemId, 'collection_ids', ids);
+}
+
+async function setItemStatus(itemId, status) {
+  await saveItemField(itemId, 'status', status);
+  if (currentLightboxId === itemId) openLightbox(itemId);
+}
+
+async function toggleStar(itemId) {
+  const item = allItems.find(i => i.item_id === itemId);
+  if (!item) return;
+  const newStatus = item.status === 'starred' ? 'new' : 'starred';
+  await saveItemField(itemId, 'status', newStatus);
+}
+
+async function deleteItem(itemId) {
+  await api(`/api/items/${itemId}`, { method: 'DELETE' });
+  closeLightbox();
+  loadItems();
+  toast('Deleted', 'success');
+}
+
+function viewAnimation(itemId) {
+  document.getElementById('lightboxImg').src = `/api/files/${itemId}/animation.gif`;
+}
+
+function copyColor(hex) {
+  navigator.clipboard.writeText(hex);
+  toast(`Copied ${hex}`, 'success');
+}
+
+// ---------------------------------------------------------------------------
+// Selection & Export
+// ---------------------------------------------------------------------------
+function setupSelection() {
+  document.getElementById('selectToggle').addEventListener('click', () => {
+    selecting = !selecting;
+    selectedIds.clear();
+    document.querySelector('.main').classList.toggle('selecting', selecting);
+    document.getElementById('selectionBar').classList.toggle('active', selecting);
+    document.getElementById('selectToggle').textContent = selecting ? 'Cancel' : 'Select';
+    renderGallery();
+  });
+
+  document.getElementById('cancelSelectBtn').addEventListener('click', () => {
+    selecting = false;
+    selectedIds.clear();
+    document.querySelector('.main').classList.remove('selecting');
+    document.getElementById('selectionBar').classList.remove('active');
+    document.getElementById('selectToggle').textContent = 'Select';
+    renderGallery();
+  });
+
+  document.getElementById('exportClaudeBtn').addEventListener('click', () => {
+    copyForClaude(Array.from(selectedIds));
+  });
+
+  document.getElementById('archiveSelectedBtn').addEventListener('click', async () => {
+    for (const id of selectedIds) {
+      await api(`/api/items/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'archived' }) });
+    }
+    selectedIds.clear();
+    loadItems();
+    toast('Archived', 'success');
+  });
+
+  document.getElementById('deleteSelectedBtn').addEventListener('click', async () => {
+    for (const id of selectedIds) {
+      await api(`/api/items/${id}`, { method: 'DELETE' });
+    }
+    selectedIds.clear();
+    loadItems();
+    toast('Deleted', 'success');
+  });
+}
+
+function toggleSelect(itemId) {
+  if (selectedIds.has(itemId)) selectedIds.delete(itemId);
+  else selectedIds.add(itemId);
+  document.getElementById('selectionCount').textContent = selectedIds.size;
+
+  // Update card visuals
+  const card = document.querySelector(`.card-select[data-id="${itemId}"]`);
+  if (card) {
+    card.classList.toggle('selected', selectedIds.has(itemId));
+    card.innerHTML = selectedIds.has(itemId) ? '&#10003;' : '';
+  }
+}
+
+async function copyForClaude(itemIds) {
+  const { prompt } = await api('/api/export/claude', {
+    method: 'POST',
+    body: JSON.stringify({ item_ids: itemIds }),
+  });
+  await navigator.clipboard.writeText(prompt);
+  toast(`Copied ${itemIds.length} reference${itemIds.length > 1 ? 's' : ''} for Claude`, 'success');
+}
+
+// ---------------------------------------------------------------------------
+// Toast
+// ---------------------------------------------------------------------------
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+function esc(s) {
+  if (!s) return '';
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>

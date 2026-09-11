@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# DesignVault launcher — starts the server (with port sniffing) and opens the browser.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="$SCRIPT_DIR/../Resources/app"
+DATA_DIR="$HOME/.design-vault"
+PORT_FILE="$DATA_DIR/port"
+LOG="$DATA_DIR/designvault.log"
+
+# Find uv wherever it lives on this machine
+UV=""
+for candidate in "$HOME/.local/bin/uv" "/opt/homebrew/bin/uv" "/usr/local/bin/uv"; do
+  if [[ -x "$candidate" ]]; then
+    UV="$candidate"
+    break
+  fi
+done
+if [[ -z "$UV" ]]; then
+  UV="$(command -v uv || true)"
+fi
+if [[ -z "$UV" ]]; then
+  osascript -e 'display alert "DesignVault needs uv" message "Install it first: brew install uv" as warning'
+  exit 1
+fi
+
+mkdir -p "$DATA_DIR"
+
+# If already running, just open the browser
+if [[ -f "$PORT_FILE" ]]; then
+  EXISTING_PORT=$(cat "$PORT_FILE")
+  # Verify the process is actually listening
+  if lsof -i ":$EXISTING_PORT" -sTCP:LISTEN &>/dev/null; then
+    open "http://localhost:$EXISTING_PORT"
+    exit 0
+  else
+    # Stale port file — clean up
+    rm -f "$PORT_FILE"
+  fi
+fi
+
+# Ensure Playwright Chromium is installed (idempotent, fast if present)
+"$UV" run --with playwright playwright install chromium > /dev/null 2>&1 || true
+
+# Start the server in the background
+cd "$APP_DIR"
+"$UV" run --with flask --with pillow --with playwright app.py > "$LOG" 2>&1 &
+SERVER_PID=$!
+
+# Wait for the port file to appear (max 30 seconds)
+for i in $(seq 1 60); do
+  if [[ -f "$PORT_FILE" ]]; then
+    PORT=$(cat "$PORT_FILE")
+    # Verify it's actually listening
+    if lsof -i ":$PORT" -sTCP:LISTEN &>/dev/null; then
+      open "http://localhost:$PORT"
+      exit 0
+    fi
+  fi
+  sleep 0.5
+done
+
+# Fallback: check if process died
+if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+  osascript -e 'display alert "DesignVault failed to start" message "Check ~/.design-vault/designvault.log for details" as warning'
+  exit 1
+fi
+
+# Process is running but port file never appeared — try default
+open "http://localhost:7750"

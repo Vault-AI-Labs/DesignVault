@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.iconset/
+generate_icon.py
+create_iconset.py
+convert_to_icns.py
