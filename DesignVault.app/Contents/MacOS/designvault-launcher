@@ -39,8 +39,12 @@ if [[ -f "$PORT_FILE" ]]; then
   fi
 fi
 
-# Ensure Playwright Chromium is installed (idempotent, fast if present)
-"$UV" run --with playwright playwright install chromium > /dev/null 2>&1 || true
+# Ensure Playwright Chromium is installed (idempotent, fast if present).
+# Runs in the background — it's only needed for the URL-capture feature, and
+# on a slow/first-time connection its download can take minutes. Blocking
+# startup on it here left the app looking hung with no feedback at all
+# (output was fully suppressed and nothing opened until it finished).
+("$UV" run --with playwright playwright install chromium > "$DATA_DIR/playwright-install.log" 2>&1 || true) &
 
 # Start the server in the background
 cd "$APP_DIR"
