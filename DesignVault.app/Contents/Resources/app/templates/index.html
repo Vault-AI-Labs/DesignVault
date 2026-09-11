@@ -383,6 +383,95 @@ body {
   font-size: 12px; color: var(--text3);
 }
 .animate-toggle input { accent-color: var(--accent); }
+
+/* ---------------------------------------------------------------------- */
+/* Workflow / Process Guide */
+/* ---------------------------------------------------------------------- */
+.workflow-view { max-width: 760px; }
+
+.wf-eyebrow {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--accent2); margin-bottom: 8px;
+}
+.wf-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+.wf-dek {
+  font-size: 14px; color: var(--text2); line-height: 1.5;
+  max-width: 60ch; margin-bottom: 22px;
+}
+
+.wf-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
+.wf-progress-count {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.wf-progress-track {
+  flex: 1 1 auto; min-width: 100px; height: 6px;
+  background: var(--surface3); border-radius: 3px; overflow: hidden;
+}
+.wf-progress-bar {
+  height: 100%; width: 0%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  transition: width 0.3s ease;
+}
+.wf-reset {
+  font-size: 11px; color: var(--text3);
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px 10px; cursor: pointer; transition: all 0.15s;
+}
+.wf-reset:hover { border-color: var(--accent); color: var(--accent2); }
+
+.wf-phase {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--card-radius); padding: 20px; margin-bottom: 16px;
+}
+.wf-phase-head {
+  display: flex; align-items: baseline; gap: 14px;
+  padding-bottom: 14px; margin-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+.wf-phase-num {
+  font-size: 22px; font-weight: 700; color: var(--surface3);
+  line-height: 1; flex-shrink: 0; min-width: 32px;
+}
+.wf-phase.is-done .wf-phase-num { color: var(--accent2); }
+.wf-phase-title-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.wf-phase-title { font-size: 15px; font-weight: 700; margin: 0; }
+.wf-done-tag {
+  display: none; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--success); border: 1px solid var(--success); border-radius: 999px; padding: 2px 8px;
+}
+.wf-phase.is-done .wf-done-tag { display: inline-block; }
+.wf-phase-sub { font-size: 12.5px; color: var(--text3); margin: 3px 0 0; }
+
+.wf-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.wf-item { border-top: 1px solid var(--border); }
+.wf-item:first-child { border-top: none; }
+.wf-item label { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; cursor: pointer; }
+.wf-item input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; }
+.wf-item .wf-text { font-size: 13.5px; color: var(--text); line-height: 1.45; }
+.wf-item:has(input:checked) .wf-text {
+  color: var(--text3); text-decoration: line-through; text-decoration-color: var(--border);
+}
+.wf-tip { font-size: 12px; color: var(--text3); line-height: 1.5; margin: 3px 0 0; }
+
+.wf-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.wf-link {
+  font-size: 11px; color: var(--accent2); background: var(--accent-bg);
+  border: 1px solid transparent; border-radius: 999px; padding: 4px 10px;
+  text-decoration: none; transition: border-color 0.15s;
+}
+.wf-link:hover { border-color: var(--accent); }
+
+.wf-reference { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 8px; }
+@media (max-width: 700px) { .wf-reference { grid-template-columns: 1fr; } }
+.wf-ref-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text3); margin-bottom: 8px;
+}
+.wf-chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0; }
+.wf-chip {
+  font-size: 11px; color: var(--text2); background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px;
+}
 </style>
 </head>
 <body>
@@ -427,6 +516,13 @@ body {
     </div>
 
     <div class="sidebar-section">
+      <h3>Guide</h3>
+      <button class="sidebar-item" id="workflowNavBtn" data-view="workflow">
+        <span>Process Guide</span>
+      </button>
+    </div>
+
+    <div class="sidebar-section">
       <h3>Collections</h3>
       <div id="collectionsList"></div>
       <div class="collection-add">
@@ -451,6 +547,261 @@ body {
     <div class="empty-state" id="emptyState" style="display:none;">
       <h2>No inspiration yet</h2>
       <p>Paste a URL above or drop images to start your collection</p>
+    </div>
+
+    <div class="workflow-view" id="workflowView" style="display:none;">
+      <p class="wf-eyebrow">Front-end design workflow</p>
+      <h2 class="wf-title">Process Guide</h2>
+      <p class="wf-dek">Taste vault &rarr; design families &rarr; micro-iteration &rarr; ship. Eighteen checks across five phases for turning this vault into a shipped design.</p>
+
+      <div class="wf-meta">
+        <span class="wf-progress-count" id="wfProgressCount">0 / 0</span>
+        <div class="wf-progress-track"><div class="wf-progress-bar" id="wfProgressBar"></div></div>
+        <button class="wf-reset" id="wfResetBtn" type="button">Reset checks</button>
+      </div>
+
+      <section class="wf-phase">
+        <div class="wf-phase-head">
+          <span class="wf-phase-num">00</span>
+          <div>
+            <div class="wf-phase-title-row">
+              <h3 class="wf-phase-title">Build the taste vault</h3>
+              <span class="wf-done-tag">Done</span>
+            </div>
+            <p class="wf-phase-sub">Collect raw material before you generate anything.</p>
+          </div>
+        </div>
+        <ul class="wf-list">
+          <li class="wf-item">
+            <label for="wf-chk-00-1">
+              <input type="checkbox" id="wf-chk-00-1">
+              <span>
+                <span class="wf-text">Browse for pages whose aesthetic you actually respond to</span>
+                <p class="wf-tip">Land-book, Dribbble, Pinterest, X, and motion-forward sites like motionsites.ai all work &mdash; go wherever you already save things, including AI-prompted and animated design boards, not just static pages.</p>
+                <div class="wf-links">
+                  <a class="wf-link" href="https://land-book.com" target="_blank" rel="noopener noreferrer">Land-book</a>
+                  <a class="wf-link" href="https://dribbble.com/search/front-end-design-for-saas" target="_blank" rel="noopener noreferrer">Dribbble: "front-end design for SaaS"</a>
+                  <a class="wf-link" href="https://www.pinterest.com" target="_blank" rel="noopener noreferrer">Pinterest</a>
+                  <a class="wf-link" href="https://www.pinterest.com/search/pins/?q=ai%20generated%20animated%20website%20design" target="_blank" rel="noopener noreferrer">Pinterest: AI / animated site design</a>
+                  <a class="wf-link" href="https://motionsites.ai" target="_blank" rel="noopener noreferrer">motionsites.ai</a>
+                  <a class="wf-link" href="https://www.getlayers.ai" target="_blank" rel="noopener noreferrer">getlayers.ai</a>
+                  <a class="wf-link" href="https://www.siteinspire.com" target="_blank" rel="noopener noreferrer">siteinspire</a>
+                  <a class="wf-link" href="https://x.com" target="_blank" rel="noopener noreferrer">X</a>
+                </div>
+              </span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-00-2">
+              <input type="checkbox" id="wf-chk-00-2">
+              <span><span class="wf-text">Screenshot every page you like &mdash; don't pre-sort while collecting</span></span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-00-3">
+              <input type="checkbox" id="wf-chk-00-3">
+              <span>
+                <span class="wf-text">Sort the screenshots into named design families</span>
+                <p class="wf-tip">Monumental editorial, product-led minimalism, technical systems, futurism, print/tech paper, quiet cinematic &mdash; named families turn a pile of screenshots into a menu you can point at. Use Collections above for this.</p>
+              </span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-00-4">
+              <input type="checkbox" id="wf-chk-00-4">
+              <span><span class="wf-text">Treat the vault as ongoing &mdash; add to it the moment you notice a new site</span></span>
+            </label>
+          </li>
+        </ul>
+      </section>
+
+      <section class="wf-phase">
+        <div class="wf-phase-head">
+          <span class="wf-phase-num">01</span>
+          <div>
+            <div class="wf-phase-title-row">
+              <h3 class="wf-phase-title">Brief across multiple families</h3>
+              <span class="wf-done-tag">Done</span>
+            </div>
+            <p class="wf-phase-sub">Ask for a spread of directions, never one design.</p>
+          </div>
+        </div>
+        <ul class="wf-list">
+          <li class="wf-item">
+            <label for="wf-chk-01-1">
+              <input type="checkbox" id="wf-chk-01-1">
+              <span><span class="wf-text">Write one product brief &mdash; audience, what it does, the page's one job</span></span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-01-2">
+              <input type="checkbox" id="wf-chk-01-2">
+              <span><span class="wf-text">Request several landing pages, one per design family from the vault</span></span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-01-3">
+              <input type="checkbox" id="wf-chk-01-3">
+              <span>
+                <span class="wf-text">Choose which skill conditions to test &mdash; always including a no-skill baseline</span>
+                <p class="wf-tip">Worth testing: Impeccable, the Taste skill, a platform's own front-end skill, and the model with nothing attached.</p>
+              </span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-01-4">
+              <input type="checkbox" id="wf-chk-01-4">
+              <span>
+                <span class="wf-text">Generate the full matrix in one pass</span>
+                <p class="wf-tip">Five families &times; four skill conditions is twenty renders &mdash; compare them as a grid, not one at a time.</p>
+              </span>
+            </label>
+          </li>
+        </ul>
+      </section>
+
+      <section class="wf-phase">
+        <div class="wf-phase-head">
+          <span class="wf-phase-num">02</span>
+          <div>
+            <div class="wf-phase-title-row">
+              <h3 class="wf-phase-title">Compare, then choose a direction</h3>
+              <span class="wf-done-tag">Done</span>
+            </div>
+            <p class="wf-phase-sub">Pick a lane, not a finished page.</p>
+          </div>
+        </div>
+        <ul class="wf-list">
+          <li class="wf-item">
+            <label for="wf-chk-02-1">
+              <input type="checkbox" id="wf-chk-02-1">
+              <span><span class="wf-text">Look at every version side by side before judging any one of them</span></span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-02-2">
+              <input type="checkbox" id="wf-chk-02-2">
+              <span>
+                <span class="wf-text">Judge on how it reads at a glance, not on which skill made it</span>
+                <p class="wf-tip">A well-prompted baseline can beat a "fancier" skill &mdash; don't assume more scaffolding wins.</p>
+              </span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-02-3">
+              <input type="checkbox" id="wf-chk-02-3">
+              <span><span class="wf-text">Pick one design family as the direction</span></span>
+            </label>
+          </li>
+        </ul>
+      </section>
+
+      <section class="wf-phase">
+        <div class="wf-phase-head">
+          <span class="wf-phase-num">03</span>
+          <div>
+            <div class="wf-phase-title-row">
+              <h3 class="wf-phase-title">Branch and narrow</h3>
+              <span class="wf-done-tag">Done</span>
+            </div>
+            <p class="wf-phase-sub">Vary inside the chosen family until one composition wins.</p>
+          </div>
+        </div>
+        <ul class="wf-list">
+          <li class="wf-item">
+            <label for="wf-chk-03-1">
+              <input type="checkbox" id="wf-chk-03-1">
+              <span><span class="wf-text">Ask for 2&ndash;3 further variations within the chosen family only</span></span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-03-2">
+              <input type="checkbox" id="wf-chk-03-2">
+              <span><span class="wf-text">Compare the variations against each other, not the families you dropped</span></span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-03-3">
+              <input type="checkbox" id="wf-chk-03-3">
+              <span><span class="wf-text">Settle on the one composition you'll build out</span></span>
+            </label>
+          </li>
+        </ul>
+      </section>
+
+      <section class="wf-phase">
+        <div class="wf-phase-head">
+          <span class="wf-phase-num">04</span>
+          <div>
+            <div class="wf-phase-title-row">
+              <h3 class="wf-phase-title">Micro-iterate and ship</h3>
+              <span class="wf-done-tag">Done</span>
+            </div>
+            <p class="wf-phase-sub">Tune by hand, borrow only what's generic, then get a link out the door.</p>
+          </div>
+        </div>
+        <ul class="wf-list">
+          <li class="wf-item">
+            <label for="wf-chk-04-1">
+              <input type="checkbox" id="wf-chk-04-1">
+              <span>
+                <span class="wf-text">Dial in tone with a tweaks panel instead of re-prompting each change</span>
+                <p class="wf-tip">Headline weight, letter-spacing, image contrast/zoom, grid or dot pattern, accent color, entrance animation.</p>
+              </span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-04-2">
+              <input type="checkbox" id="wf-chk-04-2">
+              <span>
+                <span class="wf-text">Swap in one real component for anything that feels generic</span>
+                <p class="wf-tip">21st.dev is a fast source for a single button, card, or testimonial block &mdash; copy its prompt, then extend that look across the page.</p>
+              </span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-04-3">
+              <input type="checkbox" id="wf-chk-04-3">
+              <span>
+                <span class="wf-text">Generate bespoke hero art tied to the product's own story</span>
+                <p class="wf-tip">A built-in image model beats stock photography here &mdash; it can illustrate the actual product, not a generic hero shot.</p>
+              </span>
+            </label>
+          </li>
+          <li class="wf-item">
+            <label for="wf-chk-04-4">
+              <input type="checkbox" id="wf-chk-04-4">
+              <span>
+                <span class="wf-text">Deploy a shareable preview link and collect feedback</span>
+                <p class="wf-tip">A one-command deploy is for feedback, not production hosting.</p>
+              </span>
+            </label>
+          </li>
+        </ul>
+      </section>
+
+      <div class="wf-reference">
+        <div>
+          <p class="wf-ref-label">Design families on record</p>
+          <ul class="wf-chips">
+            <li class="wf-chip">Monumental editorial</li>
+            <li class="wf-chip">Product-led minimalism</li>
+            <li class="wf-chip">Technical systems</li>
+            <li class="wf-chip">Futurism</li>
+            <li class="wf-chip">Print / tech paper</li>
+            <li class="wf-chip">Quiet cinematic</li>
+          </ul>
+        </div>
+        <div>
+          <p class="wf-ref-label">Skill conditions worth testing</p>
+          <ul class="wf-chips">
+            <li class="wf-chip">Impeccable</li>
+            <li class="wf-chip">Taste</li>
+            <li class="wf-chip">Platform front-end skill</li>
+            <li class="wf-chip">No skill (baseline)</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -503,6 +854,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSelection();
   setupSidebar();
   setupCollectionAdd();
+  setupWorkflowView();
 });
 
 // ---------------------------------------------------------------------------
@@ -585,6 +937,7 @@ function renderGallery() {
 function setupSidebar() {
   document.querySelectorAll('.sidebar-item[data-filter]').forEach(btn => {
     btn.addEventListener('click', () => {
+      showGalleryView();
       document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = { type: btn.dataset.filter, value: null };
@@ -605,6 +958,7 @@ function renderCollections() {
 
   list.querySelectorAll('.sidebar-item').forEach(btn => {
     btn.addEventListener('click', () => {
+      showGalleryView();
       document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = { type: 'collection', value: btn.dataset.collection };
@@ -653,6 +1007,7 @@ function updateTagCloud() {
 
   cloud.querySelectorAll('.tag-pill').forEach(pill => {
     pill.addEventListener('click', () => {
+      showGalleryView();
       document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tag-pill').forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
@@ -1009,6 +1364,72 @@ async function copyForClaude(itemIds) {
   });
   await navigator.clipboard.writeText(prompt);
   toast(`Copied ${itemIds.length} reference${itemIds.length > 1 ? 's' : ''} for Claude`, 'success');
+}
+
+// ---------------------------------------------------------------------------
+// Workflow / Process Guide
+// ---------------------------------------------------------------------------
+const WF_STORAGE_KEY = 'dv-workflow-checks-v1';
+
+function showWorkflowView() {
+  document.getElementById('dropzone').style.display = 'none';
+  document.getElementById('gallery').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('workflowView').style.display = 'block';
+}
+
+function showGalleryView() {
+  document.getElementById('workflowView').style.display = 'none';
+  document.getElementById('dropzone').style.display = '';
+  document.querySelectorAll('.sidebar-item[data-view]').forEach(b => b.classList.remove('active'));
+  renderGallery();
+}
+
+function setupWorkflowView() {
+  const wfBtn = document.getElementById('workflowNavBtn');
+  wfBtn.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    wfBtn.classList.add('active');
+    showWorkflowView();
+  });
+
+  const boxes = Array.from(document.querySelectorAll('#workflowView input[type="checkbox"]'));
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(WF_STORAGE_KEY) || '{}'); } catch (e) { state = {}; }
+  boxes.forEach(b => { if (state[b.id]) b.checked = true; });
+
+  function persist() {
+    try { localStorage.setItem(WF_STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function updateProgress() {
+    const total = boxes.length;
+    const done = boxes.filter(b => b.checked).length;
+    document.getElementById('wfProgressCount').textContent = `${done} / ${total}`;
+    document.getElementById('wfProgressBar').style.width = (total ? done / total * 100 : 0) + '%';
+    document.querySelectorAll('.wf-phase').forEach(phase => {
+      const items = phase.querySelectorAll('input[type="checkbox"]');
+      const allDone = items.length > 0 && Array.from(items).every(i => i.checked);
+      phase.classList.toggle('is-done', allDone);
+    });
+  }
+
+  boxes.forEach(b => {
+    b.addEventListener('change', () => {
+      state[b.id] = b.checked;
+      persist();
+      updateProgress();
+    });
+  });
+
+  document.getElementById('wfResetBtn').addEventListener('click', () => {
+    state = {};
+    persist();
+    boxes.forEach(b => { b.checked = false; });
+    updateProgress();
+  });
+
+  updateProgress();
 }
 
 // ---------------------------------------------------------------------------
